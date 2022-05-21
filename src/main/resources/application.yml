@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: BasicAdmin
+  profiles:
+    include: db, satoken, admin, redis, system
+  mvc:
+    throw-exception-if-no-handler-found: true
+    static-path-pattern: /static/**
+  servlet:
+    multipart:
+      max-file-size: 1TB
+      max-request-size: 1TB
+
+server:
+  port: 10002
+logging:
+  level:
+    com:
+      yuxuan66:
+        modules: debug
+    org:
+      apache:
+        poi:
+          xssf:
+            streaming: warn
