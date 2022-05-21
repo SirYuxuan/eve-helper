@@ -18,6 +18,7 @@
  */
 package com.yuxuan66.cache;
 
+import cn.hutool.core.util.ArrayUtil;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -206,7 +207,7 @@ public class RedisUtil {
      * @param map 对应多个键值
      * @return true 成功 false 失败
      */
-    public boolean hmset(String key, Map<String, Object> map) {
+    public boolean hmset(String key, Map<?, ?> map) {
         try {
             redisTemplate.opsForHash().putAll(key, map);
             return true;
@@ -433,9 +434,9 @@ public class RedisUtil {
      * @param end   结束 0 到 -1代表所有值
      * @return
      */
-    public List<?> lGet(String key, long start, long end) {
+    public <T> List<T> lGet(String key, long start, long end,Class<T> clazz) {
         try {
-            return redisTemplate.opsForList().range(key, start, end);
+            return (List<T>) redisTemplate.opsForList().range(key, start, end);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -473,22 +474,6 @@ public class RedisUtil {
         }
     }
 
-    /**
-     * 将list放入缓存
-     *
-     * @param key   键
-     * @param value 值
-     * @return
-     */
-    public boolean lSet(String key, Object value) {
-        try {
-            redisTemplate.opsForList().rightPush(key, value);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
 
     /**
      * 将list放入缓存
@@ -517,9 +502,9 @@ public class RedisUtil {
      * @param value 值
      * @return
      */
-    public boolean lSet(String key, List<Object> value) {
+    public <T> boolean lSet(String key, List<T> value, Class<T> clazz) {
         try {
-            redisTemplate.opsForList().rightPushAll(key, value);
+            redisTemplate.opsForList().rightPushAll(key, ArrayUtil.toArray(value, clazz));
             return true;
         } catch (Exception e) {
             e.printStackTrace();

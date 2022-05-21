@@ -20,7 +20,6 @@ package com.yuxuan66.modules.user.entity;/*
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.yuxuan66.annotation.Mapper;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,6 +32,7 @@ import java.util.Set;
 @TableName("sys_role")
 public class Role implements Serializable {
 
+    private static final long serialVersionUID = -3991502897544098799L;
     private Long id;
     /**
      * 角色名

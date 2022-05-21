@@ -21,7 +21,6 @@ package com.yuxuan66.modules.system.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.yuxuan66.annotation.Mapper;
 import com.yuxuan66.support.basic.model.BasicEntity;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,13 +28,13 @@ import lombok.Setter;
 import java.io.Serializable;
 import java.sql.Timestamp;
 
-@Mapper
 @Setter
 @Getter
 @TableName("sys_dict")
 public class Dict extends BasicEntity implements Serializable {
-   
-    
+
+
+    private static final long serialVersionUID = -5799021159091772214L;
     private Long id;
 
     @TableField("`label`")

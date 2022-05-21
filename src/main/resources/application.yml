@@ -2,7 +2,7 @@ spring:
   application:
     name: BasicAdmin
   profiles:
-    include: db, satoken, admin, redis, system
+    include: db, satoken, admin, redis, system, http, quartz
   mvc:
     throw-exception-if-no-handler-found: true
     static-path-pattern: /static/**
@@ -23,3 +23,5 @@ logging:
         poi:
           xssf:
             streaming: warn
+
+

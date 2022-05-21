@@ -5,7 +5,6 @@ import com.yuxuan66.modules.user.entity.Attach;
 import com.yuxuan66.support.aliyun.OSSHelper;
 import com.yuxuan66.support.basic.model.RespEntity;
 import lombok.RequiredArgsConstructor;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 

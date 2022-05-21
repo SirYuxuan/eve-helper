@@ -3,13 +3,11 @@ package com.yuxuan66.modules.system.service;
 import cn.hutool.core.convert.Convert;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.yuxuan66.common.utils.ExcelUtil;
-import com.yuxuan66.common.utils.FileUtil;
 import com.yuxuan66.common.utils.TokenUtil;
 import com.yuxuan66.common.utils.tree.TreeUtil;
-import com.yuxuan66.modules.user.entity.Dept;
 import com.yuxuan66.modules.user.entity.Menu;
-import com.yuxuan66.modules.user.entity.MenuMapper;
 import com.yuxuan66.modules.user.entity.query.MenuQuery;
+import com.yuxuan66.modules.user.mapper.MenuMapper;
 import com.yuxuan66.modules.user.mapper.UserMapper;
 import com.yuxuan66.support.basic.model.PageEntity;
 import com.yuxuan66.support.basic.model.RespEntity;
@@ -245,6 +243,7 @@ public class MenuService {
             queryWrapper.ge("create_time", menuQuery.getCreateTime()[0] + " 00:00:00");
             queryWrapper.le("create_time", menuQuery.getCreateTime()[1] + " 23:59:59");
         }
+        queryWrapper.orderByAsc("sort");
         return queryWrapper;
     }
 

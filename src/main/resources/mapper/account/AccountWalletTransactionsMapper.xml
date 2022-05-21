@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yuxuan66.modules.account.mapper.AccountWalletTransactionsMapper">
+
+    <!-- 批量插入 -->
+    <insert id="batchInsert">
+        INSERT INTO eve_account_wallet_transactions VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.id},#{item.accountid},#{item.characterId},#{item.characterName},#{item.clientId},#{item.clientName},#{item.date},#{item.isBuy},
+            #{item.isPersonal},#{item.journalRefId}, #{item.locationid},#{item.locationname},#{item.quantity},#{item.typeId},#{item.typeName},#{item.unitPrice},
+            now())
+        </foreach>
+    </insert>
+
+</mapper>

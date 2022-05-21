@@ -3,7 +3,7 @@ package com.yuxuan66.modules.system.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.yuxuan66.common.utils.TokenUtil;
 import com.yuxuan66.modules.system.entity.Log;
-import com.yuxuan66.modules.system.entity.LogMapper;
+import com.yuxuan66.modules.system.mapper.LogMapper;
 import com.yuxuan66.support.basic.BasicQuery;
 import com.yuxuan66.support.basic.model.PageEntity;
 import org.springframework.stereotype.Service;

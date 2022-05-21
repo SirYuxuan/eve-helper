@@ -35,6 +35,7 @@ import java.util.Set;
 @TableName("sys_user")
 public class User extends BasicEntity implements Serializable {
 
+    private static final long serialVersionUID = -5144713674762132115L;
     private Long id;
     /**
     * 用户名

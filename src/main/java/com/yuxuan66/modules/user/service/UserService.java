@@ -17,15 +17,15 @@ import com.yuxuan66.modules.user.entity.dto.PhoneCode;
 import com.yuxuan66.modules.user.entity.dto.UpdateEmail;
 import com.yuxuan66.modules.user.entity.dto.UpdatePass;
 import com.yuxuan66.modules.user.entity.query.UserQuery;
+import com.yuxuan66.modules.user.mapper.DeptMapper;
 import com.yuxuan66.modules.user.mapper.UserMapper;
+import com.yuxuan66.modules.user.mapper.UsersRolesMapper;
 import com.yuxuan66.support.aop.log.annotation.Log;
 import com.yuxuan66.support.basic.model.PageEntity;
 import com.yuxuan66.support.basic.model.RespEntity;
 import com.yuxuan66.support.mail.MailHelper;
 import com.yuxuan66.support.rsa.RsaKit;
 import lombok.RequiredArgsConstructor;
-import okhttp3.Cache;
-import org.checkerframework.checker.units.qual.C;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;

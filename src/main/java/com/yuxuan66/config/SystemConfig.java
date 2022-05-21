@@ -24,12 +24,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.yuxuan66.cache.CacheKey;
 import com.yuxuan66.cache.RedisUtil;
 import com.yuxuan66.modules.system.entity.Config;
-import com.yuxuan66.modules.system.entity.ConfigMapper;
-import lombok.Getter;
+import com.yuxuan66.modules.system.mapper.ConfigMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import org.checkerframework.checker.units.qual.C;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;

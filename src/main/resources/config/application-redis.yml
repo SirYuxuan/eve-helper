@@ -1,6 +1,6 @@
 spring:
   redis:
-    database: 0
+    database: 10
     host: localhost
     lettuce:
       pool:

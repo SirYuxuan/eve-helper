@@ -16,7 +16,7 @@
 
     <properties>
         <jwt.version>3.19.2</jwt.version>
-        <java.version>8</java.version>
+        <java.version>11</java.version>
         <hutool-all.version>5.8.0</hutool-all.version>
         <j2cache.version>2.8.0-release</j2cache.version>
         <mapstruct.version>1.3.1.Final</mapstruct.version>
@@ -38,10 +38,22 @@
         <aliyun-sdk-oss.version>3.15.0</aliyun-sdk-oss.version>
         <easy-captcha.version>1.6.2</easy-captcha.version>
         <dysmsapi20170525.version>2.0.9</dysmsapi20170525.version>
+        <forest-spring-boot-starter.version>1.5.16</forest-spring-boot-starter.version>
     </properties>
 
     <dependencies>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-quartz</artifactId>
+        </dependency>
+
+        <!-- Http请求 -->
+        <dependency>
+            <groupId>com.dtflys.forest</groupId>
+            <artifactId>forest-spring-boot-starter</artifactId>
+            <version>${forest-spring-boot-starter.version}</version>
+        </dependency>
 
         <!-- 阿里云短信服务 -->
         <dependency>

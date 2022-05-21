@@ -21,7 +21,6 @@ package com.yuxuan66.modules.user.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.yuxuan66.annotation.Mapper;
 import com.yuxuan66.common.utils.tree.TreeField;
 import com.yuxuan66.common.utils.tree.TreeId;
 import com.yuxuan66.common.utils.tree.TreeParent;
@@ -32,12 +31,12 @@ import lombok.Setter;
 import java.io.Serializable;
 import java.sql.Timestamp;
 
-@Mapper
 @Setter
 @Getter
 @TableName("sys_dept")
 public class Dept extends BasicEntity implements Serializable {
 
+    private static final long serialVersionUID = -8374503037007506717L;
     @TreeId
     @TreeField
     private Long id;

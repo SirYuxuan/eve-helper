@@ -1,27 +1,25 @@
 package com.yuxuan66.modules.system.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.yuxuan66.annotation.Mapper;
 import com.yuxuan66.support.basic.model.BasicEntity;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.sql.Timestamp;
-import java.util.Date;
 import java.io.Serializable;
+import java.sql.Timestamp;
 
 /**
  * (SysLog)实体类
  *
- * @author makejava
+ * @author Sir丶雨轩
  * @since 2021-12-07 15:15:48
  */
-@Mapper
 @Setter
 @Getter
 @TableName("sys_log")
 public class Log extends BasicEntity implements Serializable {
 
+    private static final long serialVersionUID = -6803121155040420849L;
     private Long id;
     /**
      * 日志标题

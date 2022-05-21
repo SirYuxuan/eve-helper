@@ -38,7 +38,7 @@ public class ThreadPoolConfig {
     private static final int THREADS = Runtime.getRuntime().availableProcessors() + 1;
 
     // 最大可创建的线程数
-    private final int maxPoolSize = 2 * THREADS;;
+    private final int maxPoolSize = 5 * THREADS;;
 
     //线程池名前缀
     private static final String threadNamePrefix = "Async-Service-";

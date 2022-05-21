@@ -31,6 +31,7 @@ import java.sql.Timestamp;
 @TableName("sys_attach")
 public class Attach implements Serializable {
 
+    private static final long serialVersionUID = -637704174630942282L;
     private Long id;
     /**
     * 附件类型 1=URL,2=本地,3=OSS,4=七牛,5=...
