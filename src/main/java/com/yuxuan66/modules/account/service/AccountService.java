@@ -27,10 +27,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
@@ -160,20 +157,30 @@ public class AccountService {
             walletTransactionsArr = walletTransactionsArr.stream().filter(item -> ((JSONObject) item).getLongValue("id") > lastId).collect(Collectors.toCollection(JSONArray::new));
         }
 
+        if(walletTransactionsArr.isEmpty()){
+            return new AsyncResult<>(true);
+        }
+
         List<AccountWalletTransactions> saveOrderHistory = new ArrayList<>();
 
         Map<Integer,Type> typeMap = cache.getTypeMap();
 
         List<Integer> ids = walletTransactionsArr.stream().map(item->((JSONObject)item).getIntValue("client_id")).collect(Collectors.toList());
         JSONArray nameArrays = esi.universeNames(ids);
-
+        Map<Integer,Map<String,String>> idNames = new HashMap<>();
+        for (Object nameArray : nameArrays) {
+            JSONObject json = (JSONObject) nameArray;
+            Map<String,String> temp = new HashMap<>();
+            temp.put("name",json.getString("name"));
+            temp.put("type",json.getString("category"));
+            idNames.put(json.getIntValue("id"),temp);
+        }
         for (Object o : walletTransactionsArr) {
             JSONObject obj = (JSONObject) o;
             AccountWalletTransactions accountWalletTransactions = obj.toJavaObject(AccountWalletTransactions.class);
             accountWalletTransactions.setAccountId(account.getId());
             accountWalletTransactions.setCharacterId(account.getCharacterId());
             accountWalletTransactions.setCharacterName(account.getCharacterName());
-            accountWalletTransactions.setClientName(esi.charactersName(accountWalletTransactions.getClientId()));
             accountWalletTransactions.setDate(DateUtil.parse(obj.getString("date")).setTimeZone(TimeZone.getDefault()).toTimestamp());
             accountWalletTransactions.setId(obj.getLongValue("transaction_id"));
             accountWalletTransactions.setLocationName(esi.getLocationName(account, accountWalletTransactions.getLocationId()));
@@ -181,6 +188,13 @@ public class AccountService {
             if(type != null){
                 accountWalletTransactions.setTypeName(type.getName());
             }
+            if(idNames.containsKey(accountWalletTransactions.getClientId())){
+                Map<String,String> nameMapping = idNames.get(accountWalletTransactions.getClientId());
+                accountWalletTransactions.setClientName(nameMapping.get("name"));
+                accountWalletTransactions.setClientType(nameMapping.get("type"));
+            }
+
+
 
 
             saveOrderHistory.add(accountWalletTransactions);

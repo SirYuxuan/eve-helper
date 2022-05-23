@@ -57,11 +57,11 @@ public class BasicQuery<T> {
     }
 
     public void processingSort(){
-        if(StrUtil.isNotBlank(order) && StrUtil.isNotBlank(orderBy)){
-            if(order.equals("descending")){
-                queryWrapper.orderByDesc(StrUtil.toUnderlineCase(orderBy));
+        if(StrUtil.isNotBlank(this.order) && StrUtil.isNotBlank(this.orderBy)){
+            if(this.order.contains("desc")){
+                queryWrapper.orderByDesc(StrUtil.toUnderlineCase(this.orderBy));
             }else{
-                queryWrapper.orderByAsc(StrUtil.toUnderlineCase(orderBy));
+                queryWrapper.orderByAsc(StrUtil.toUnderlineCase(this.orderBy));
             }
         }
     }

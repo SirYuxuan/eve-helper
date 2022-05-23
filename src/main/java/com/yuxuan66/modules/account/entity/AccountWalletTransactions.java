@@ -41,6 +41,7 @@ public class AccountWalletTransactions implements Serializable {
      * 客户名称
      */
     private String clientName;
+    private String clientType;
     /**
      * 订单时间
      */

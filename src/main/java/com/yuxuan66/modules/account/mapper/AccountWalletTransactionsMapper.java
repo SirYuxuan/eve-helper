@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Sir丶雨轩
@@ -29,4 +30,11 @@ public interface AccountWalletTransactionsMapper extends BasicMapper<AccountWall
      * @return 插入条数
      */
     long batchInsert(List<AccountWalletTransactions> list);
+
+    /**
+     * 查询30天内每日的交易额
+     * @return 数据
+     */
+    @Select("select * from (select DATE_FORMAT(date,'%Y-%m-%d') date,sum(unit_price*quantity) price from eve_account_wallet_transactions  where DATE_SUB(CURDATE(), INTERVAL 30 DAY) <= date(date) GROUP BY DATE_FORMAT(date,'%Y-%m-%d')) a ORDER BY date desc")
+    List<Map<String,Object>> dailySales();
 }
