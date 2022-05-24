@@ -11,21 +11,23 @@ import com.yuxuan66.common.esi.entity.EsiAccountInfo;
 import com.yuxuan66.common.esi.http.EsiClient;
 import com.yuxuan66.common.utils.TokenUtil;
 import com.yuxuan66.modules.account.entity.Account;
+import com.yuxuan66.modules.account.entity.AccountOrder;
 import com.yuxuan66.modules.account.entity.AccountOrderHistory;
 import com.yuxuan66.modules.account.entity.AccountWalletTransactions;
 import com.yuxuan66.modules.account.mapper.AccountMapper;
 import com.yuxuan66.modules.account.mapper.AccountOrderHistoryMapper;
+import com.yuxuan66.modules.account.mapper.AccountOrderMapper;
 import com.yuxuan66.modules.account.mapper.AccountWalletTransactionsMapper;
 import com.yuxuan66.modules.database.entity.Type;
 import com.yuxuan66.support.basic.BasicQuery;
 import com.yuxuan66.support.basic.model.PageEntity;
+import com.yuxuan66.support.basic.model.RespEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.Future;
@@ -47,6 +49,8 @@ public class AccountService {
     private AccountMapper accountMapper;
     @Resource
     private AccountOrderHistoryMapper accountOrderHistoryMapper;
+    @Resource
+    private AccountOrderMapper accountOrderMapper;
     @Resource
     private AccountWalletTransactionsMapper accountWalletTransactionsMapper;
 
@@ -120,6 +124,7 @@ public class AccountService {
             JSONObject obj = (JSONObject) o;
             AccountOrderHistory accountOrderHistory = obj.toJavaObject(AccountOrderHistory.class);
             accountOrderHistory.setAccountId(account.getId());
+            accountOrderHistory.setUserId(account.getUserId());
             accountOrderHistory.setCharacterId(account.getCharacterId());
             accountOrderHistory.setCharacterName(account.getCharacterName());
             accountOrderHistory.setId(obj.getLongValue("order_id"));
@@ -145,16 +150,20 @@ public class AccountService {
         return new AsyncResult<>(true);
     }
 
-    @PostConstruct
-    public Future<Boolean> refreshWalletTransactions() {
+    /**
+     * 异步刷新一个用户的市场交易记录
+     * @param account 用户
+     * @return 结果
+     */
+    @Async("threadPoolTaskExecutor")
+    public Future<Boolean> refreshWalletTransactions(Account account) {
 
-        Account account = accountMapper.selectById(59L);
-        JSONArray walletTransactionsArr = esi.charactersWalletTransactions(account, 1);
+        JSONArray walletTransactionsArr = esi.charactersWalletTransactions(account);
 
         Long lastId = accountWalletTransactionsMapper.getLast(account.getId());
 
         if (lastId != null) {
-            walletTransactionsArr = walletTransactionsArr.stream().filter(item -> ((JSONObject) item).getLongValue("id") > lastId).collect(Collectors.toCollection(JSONArray::new));
+            walletTransactionsArr = walletTransactionsArr.stream().filter(item -> ((JSONObject) item).getLongValue("transaction_id") > lastId).collect(Collectors.toCollection(JSONArray::new));
         }
 
         if(walletTransactionsArr.isEmpty()){
@@ -179,6 +188,7 @@ public class AccountService {
             JSONObject obj = (JSONObject) o;
             AccountWalletTransactions accountWalletTransactions = obj.toJavaObject(AccountWalletTransactions.class);
             accountWalletTransactions.setAccountId(account.getId());
+            accountWalletTransactions.setUserId(account.getUserId());
             accountWalletTransactions.setCharacterId(account.getCharacterId());
             accountWalletTransactions.setCharacterName(account.getCharacterName());
             accountWalletTransactions.setDate(DateUtil.parse(obj.getString("date")).setTimeZone(TimeZone.getDefault()).toTimestamp());
@@ -201,7 +211,54 @@ public class AccountService {
         }
 
         if (!saveOrderHistory.isEmpty()) {
-            accountWalletTransactionsMapper.batchInsert(saveOrderHistory);
+            accountWalletTransactionsMapper.batchInsert(new ArrayList<>(new HashSet<>(saveOrderHistory)));
+        }
+
+
+        return new AsyncResult<>(true);
+    }
+
+    /**
+     * 异步刷新一个用户的市场订单
+     * @param account 用户
+     * @return 结果
+     */
+    @Async("threadPoolTaskExecutor")
+    public Future<Boolean> refreshAccountOrder(Account account) {
+
+        JSONArray walletOrderArr = esiClient.charactersOrders(account);
+
+        if(walletOrderArr.isEmpty()){
+            return new AsyncResult<>(true);
+        }
+
+        List<AccountOrder> saveOrderHistory = new ArrayList<>();
+
+        Map<Integer,Type> typeMap = cache.getTypeMap();
+
+
+        for (Object o : walletOrderArr) {
+            JSONObject obj = (JSONObject) o;
+            AccountOrder accountOrder = obj.toJavaObject(AccountOrder.class);
+            accountOrder.setAccountId(account.getId());
+            accountOrder.setUserId(account.getUserId());
+            accountOrder.setCharacterId(account.getCharacterId());
+            accountOrder.setCharacterName(account.getCharacterName());
+            accountOrder.setIssued(DateUtil.parse(obj.getString("issued")).setTimeZone(TimeZone.getDefault()).toTimestamp());
+            accountOrder.setId(obj.getLongValue("order_id"));
+            accountOrder.setLocationName(esi.getLocationName(account, accountOrder.getLocationId()));
+            Type type = typeMap.get(accountOrder.getTypeId());
+            if(type != null){
+                accountOrder.setTypeName(type.getName());
+            }
+            accountOrder.setRegionName(esi.universeRegions(accountOrder.getRegionId()));
+
+            saveOrderHistory.add(accountOrder);
+        }
+
+        accountOrderMapper.delete(new QueryWrapper<AccountOrder>().eq("account_id",account.getId()));
+        if (!saveOrderHistory.isEmpty()) {
+            accountOrderMapper.batchInsert(saveOrderHistory);
         }
 
 
@@ -218,5 +275,50 @@ public class AccountService {
         QueryWrapper<Account> queryWrapper = basicQuery.getQueryWrapper();
         queryWrapper.eq("user_id", TokenUtil.getUserId());
         return PageEntity.success(accountMapper.selectPage(basicQuery.getPage(), queryWrapper));
+    }
+
+    /**
+     * 查询当前登录的角色列表
+     * @return 角色列表
+     */
+    public RespEntity listLoginAccount(){
+        return RespEntity.success(getLoginAccount());
+    }
+
+    /**
+     * 刷新当前登录用户所有的订单
+     * @return 标准返回
+     */
+    public RespEntity refreshMarketTransactions(){
+
+        List<Account> accountList = getLoginAccount();
+        for (Account account : accountList) {
+            this.refreshWalletTransactions(account);
+        }
+
+        return RespEntity.success();
+    }
+
+    /**
+     * 刷新当前登录用户所有的订单
+     * @return 标准返回
+     */
+    public RespEntity refreshAccountOrder(){
+
+        List<Account> accountList = getLoginAccount();
+        for (Account account : accountList) {
+            this.refreshAccountOrder(account);
+        }
+
+        return RespEntity.success();
+    }
+
+
+    /**
+     * 获取当前登录人员的角色列表
+     * @return 角色列表
+     */
+    public List<Account> getLoginAccount(){
+        return accountMapper.selectList(new QueryWrapper<Account>().eq("user_id",TokenUtil.getUserId()));
     }
 }

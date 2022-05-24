@@ -4,6 +4,7 @@ import com.yuxuan66.modules.account.entity.Account;
 import com.yuxuan66.modules.account.service.AccountService;
 import com.yuxuan66.support.basic.BasicQuery;
 import com.yuxuan66.support.basic.model.PageEntity;
+import com.yuxuan66.support.basic.model.RespEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,5 +30,31 @@ public class AccountController {
     @GetMapping
     public PageEntity list(BasicQuery<Account> basicQuery){
         return accountService.list(basicQuery);
+    }
+
+    /**
+     * 查询当前登录的角色列表
+     * @return 角色列表
+     */
+    @GetMapping(path = "/listLoginAccount")
+    public RespEntity listLoginAccount(){
+        return accountService.listLoginAccount();
+    }
+
+    /**
+     * 刷新当前登录用户所有的订单
+     * @return 标准返回
+     */
+    @GetMapping(path = "/refreshMarketTransactions")
+    public RespEntity refreshMarketTransactions(){
+        return accountService.refreshMarketTransactions();
+    }
+    /**
+     * 刷新当前登录用户所有的订单
+     * @return 标准返回
+     */
+    @GetMapping(path = "/refreshAccountOrder")
+    public RespEntity refreshAccountOrder(){
+        return accountService.refreshAccountOrder();
     }
 }

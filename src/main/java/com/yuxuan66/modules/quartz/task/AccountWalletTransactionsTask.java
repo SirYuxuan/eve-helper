@@ -32,7 +32,7 @@ public class AccountWalletTransactionsTask implements Job {
         List<Account> allAccount = accountMapper.selectList(null);
         for (Account account : allAccount) {
             try{
-                accountService.refreshWalletTransactions();
+
             }catch (Exception e){
                 e.printStackTrace();
             }

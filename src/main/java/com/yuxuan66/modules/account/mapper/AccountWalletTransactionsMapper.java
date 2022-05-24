@@ -35,6 +35,6 @@ public interface AccountWalletTransactionsMapper extends BasicMapper<AccountWall
      * 查询30天内每日的交易额
      * @return 数据
      */
-    @Select("select * from (select DATE_FORMAT(date,'%Y-%m-%d') date,sum(unit_price*quantity) price from eve_account_wallet_transactions  where DATE_SUB(CURDATE(), INTERVAL 30 DAY) <= date(date) GROUP BY DATE_FORMAT(date,'%Y-%m-%d')) a ORDER BY date desc")
-    List<Map<String,Object>> dailySales();
+    @Select("select * from (select DATE_FORMAT(date,'%Y-%m-%d') date,sum(unit_price*quantity) price from eve_account_wallet_transactions  where account_id = #{accountId} and is_buy = 0 and DATE_SUB(CURDATE(), INTERVAL 15 DAY) <= date(date) GROUP BY DATE_FORMAT(date,'%Y-%m-%d')) a ORDER BY date desc")
+    List<Map<String,Object>> dailySales(Long accountId);
 }

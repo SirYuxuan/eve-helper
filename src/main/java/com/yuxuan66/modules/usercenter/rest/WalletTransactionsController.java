@@ -35,7 +35,7 @@ public class WalletTransactionsController {
      * @return 标准返回
      */
     @GetMapping(path = "/dailySales")
-    public RespEntity dailySales(){
-        return walletTransactionsService.dailySales();
+    public RespEntity dailySales(Long accountId){
+        return walletTransactionsService.dailySales(accountId);
     }
 }

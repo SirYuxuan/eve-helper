@@ -7,7 +7,7 @@
     <insert id="batchInsert">
         INSERT INTO eve_account_order_history VALUES
         <foreach collection="list" item="item" separator=",">
-            (#{item.id},#{item.accountId},#{item.characterId},#{item.characterName},#{item.escrow},#{item.regionId},#{item.regionName},#{item.duration},
+            (#{item.id},#{item.accountId},#{item.userId},#{item.characterId},#{item.characterName},#{item.escrow},#{item.regionId},#{item.regionName},#{item.duration},
             #{item.isBuyOrder},#{item.isCorporation}, #{item.issued},#{item.locationId},#{item.locationName},#{item.minVolume},#{item.price},#{item.range},#{item.state},
             #{item.typeId},#{item.typeName},#{item.volumeRemain},#{item.volumeTotal},
             now())

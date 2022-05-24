@@ -71,6 +71,7 @@ public class AccountOrderHistory implements Serializable {
     private Integer volumeTotal;
 
     private Long accountId;
+    private Long userId;
     /**
      * 角色ID
      */

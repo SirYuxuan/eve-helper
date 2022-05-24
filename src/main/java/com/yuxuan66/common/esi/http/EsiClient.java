@@ -80,7 +80,7 @@ public interface EsiClient {
      * @param id 区域id
      * @return 区域信息
      */
-    @Get("universe/regions/{id}/")
+    @Get("universe/regions/{id}/?language=zh")
     JSONObject universeRegions(@Var("id") Integer id);
 
     /**
@@ -124,12 +124,11 @@ public interface EsiClient {
      * 获取用户市场交易
      *
      * @param account 用户
-     * @param page        页码
      * @return 市场交易
      */
-    @Get("characters/{account.characterId}/wallet/transactions?page={page}")
+    @Get("characters/{account.characterId}/wallet/transactions")
     @Token
-    ForestResponse<JSONArray> charactersWalletTransactions(@Var("account") Account account, @Var("page") int page);
+    JSONArray charactersWalletTransactions(@Var("account") Account account);
 
 
     /**
@@ -142,6 +141,16 @@ public interface EsiClient {
     @Get("characters/{account.characterId}/orders/history?page={page}")
     @Token
     ForestResponse<JSONArray> charactersOrdersHistory(@Var("account") Account account, @Var("page") int page);
+
+    /**
+     * 查询一个用户的订单
+     *
+     * @param account 用户
+     * @return 订单
+     */
+    @Get("characters/{account.characterId}/orders/")
+    @Token
+    JSONArray charactersOrders(@Var("account") Account account);
 
     /**
      * 获取军团建筑列表
@@ -268,11 +277,33 @@ public interface EsiClient {
     ForestResponse<JSONArray> charactersMining(@Var("account") Account account, @Var("page") int page);
 
     /**
+     * 查询玩家建筑订单
+     * @param account 角色
+     * @param id 建筑id
+     * @param page 页码
+     * @return 数据
+     */
+    @Get("markets/structures/{id}/?page={page}")
+    @Token
+    ForestResponse<JSONArray> marketsStructures(@Var("account") Account account,@Var("id") Long id, @Var("page") int page);
+
+    /**
+     * 查询NPC建筑订单
+     * @param id 建筑id
+     * @param page 页码
+     * @return 数据
+     */
+    @Get("markets/{id}/orders/?page={page}&order_type=all")
+    ForestResponse<JSONArray> marketsRegion(@Var("id") Integer id, @Var("page") int page);
+
+    /**
      * 获取物品的基准价格
      * @return 基准价格
      */
     @Get("markets/prices")
     JSONArray marketsPrices();
+
+
 
 
 

@@ -7,7 +7,7 @@
     <insert id="batchInsert">
         INSERT INTO eve_account_wallet_transactions VALUES
         <foreach collection="list" item="item" separator=",">
-            (#{item.id},#{item.accountId},#{item.characterId},#{item.characterName},#{item.clientId},#{item.clientType},#{item.clientName},#{item.date},#{item.isBuy},
+            (#{item.id},#{item.accountId},#{item.userId},#{item.characterId},#{item.characterName},#{item.clientId},#{item.clientType},#{item.clientName},#{item.date},#{item.isBuy},
             #{item.isPersonal},#{item.journalRefId}, #{item.locationId},#{item.locationName},#{item.quantity},#{item.typeId},#{item.typeName},#{item.unitPrice},
             now())
         </foreach>

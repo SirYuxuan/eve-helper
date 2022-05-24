@@ -377,6 +377,41 @@ public class EsiApi {
     }
 
     /**
+     * 查询玩家建筑订单
+     *
+     * @param account 角色
+     * @param id      建筑id
+     * @param page    页码
+     * @return 数据
+     */
+    public JSONArray marketsStructures(Account account, Long id, int page) {
+        ForestResponse<JSONArray> response = esiClient.marketsStructures(account, id, page);
+        JSONArray result = new JSONArray();
+        result.addAll(response.getResult());
+        if (Convert.toInt(response.getHeader("x-pages").getValue()) > page) {
+            result.addAll(marketsStructures(account, id, page + 1));
+        }
+        return result;
+    }
+
+    /**
+     * 查询NPC建筑订单
+     *
+     * @param id   建筑id
+     * @param page 页码
+     * @return 数据
+     */
+    public JSONArray marketsRegion(Integer id, int page) {
+        ForestResponse<JSONArray> response = esiClient.marketsRegion(id, page);
+        JSONArray result = new JSONArray();
+        result.addAll(response.getResult());
+        if (Convert.toInt(response.getHeader("x-pages").getValue()) > page) {
+            result.addAll(marketsRegion(id, page + 1));
+        }
+        return result;
+    }
+
+    /**
      * 获取用户军团的合同信息
      *
      * @param account 用户
@@ -413,14 +448,10 @@ public class EsiApi {
      * 获取用户市场交易
      *
      * @param account 用户
-     * @param page    页码
      * @return 市场交易
      */
-    public JSONArray charactersWalletTransactions(Account account, int page) {
-        ForestResponse<JSONArray> response = esiClient.charactersWalletTransactions(account, page);
-        JSONArray result = new JSONArray();
-        result.addAll(response.getResult());
-        return result;
+    public JSONArray charactersWalletTransactions(Account account) {
+        return esiClient.charactersWalletTransactions(account);
     }
 
 
@@ -428,7 +459,7 @@ public class EsiApi {
      * 查询一个用户的订单历史
      *
      * @param account 用户
-     * @param page        订单历史
+     * @param page    订单历史
      * @return 订单历史
      */
     public JSONArray charactersOrdersHistory(Account account, int page) {

@@ -7,6 +7,7 @@ import lombok.Setter;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Objects;
 
 /**
  * EVE角色市场交易(EveAccountWalletTransactions)实体类
@@ -19,12 +20,27 @@ import java.sql.Timestamp;
 @TableName("eve_account_wallet_transactions")
 public class AccountWalletTransactions implements Serializable {
     private static final long serialVersionUID = -41806156176184825L;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AccountWalletTransactions that = (AccountWalletTransactions) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
+
     /**
      * ESI 订单ID
      */
     private Long id;
     
     private Long accountId;
+    private Long userId;
     /**
      * 角色ID
      */
