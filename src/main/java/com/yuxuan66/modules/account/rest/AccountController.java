@@ -57,4 +57,14 @@ public class AccountController {
     public RespEntity refreshAccountOrder(){
         return accountService.refreshAccountOrder();
     }
+
+    /**
+     * 刷新当前登录用户所有的资产
+     *
+     * @return 标准返回
+     */
+    @GetMapping(path = "/refreshAccountAssets")
+    public RespEntity refreshAccountAssets(){
+        return accountService.refreshAccountAssets();
+    }
 }

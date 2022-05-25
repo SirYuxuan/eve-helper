@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.yuxuan66.common.esi.EsiApi;
+import com.yuxuan66.common.esi.http.EsiClient;
 import com.yuxuan66.common.utils.TokenUtil;
 import com.yuxuan66.modules.account.entity.Account;
 import com.yuxuan66.modules.account.entity.AccountOrder;
@@ -38,6 +39,7 @@ public class AccountOrderService {
     @Resource
     private AccountMapper accountMapper;
     private final EsiApi esi;
+    private final EsiClient esiClient;
     /**
      * 缓存玩家所查询的区域/建筑订单，1小时失效
      */
@@ -126,7 +128,7 @@ public class AccountOrderService {
             }
             BigDecimal minPrice = accountOrder.getPrice();
             if(data == null){
-                if (accountOrder.getIsBuyOrder()) {
+                if (accountOrder.getIsBuyOrder() != null && accountOrder.getIsBuyOrder()) {
                     BigDecimal jitaMaxBuy = Convert.toBigDecimal(Convert.toStr(esi.getMaxBuyPrice(accountOrder.getTypeId())));
                     if (jitaMaxBuy.compareTo(minPrice) > 0) {
                         minPrice = jitaMaxBuy;
@@ -170,6 +172,17 @@ public class AccountOrderService {
 
         }
 
+        return RespEntity.success();
+    }
+
+    /**
+     * 打开游戏窗口
+     * @param orderId 订单id
+     * @return 标准返回
+     */
+    public RespEntity openWindow(Long orderId){
+        AccountOrder accountOrder = accountOrderMapper.selectById(orderId);
+        esiClient.uiOpenWindowMarketDetails(accountMapper.selectById(accountOrder.getAccountId()),accountOrder.getTypeId());
         return RespEntity.success();
     }
 }

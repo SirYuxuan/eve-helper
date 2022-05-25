@@ -61,6 +61,9 @@ public class MarketGroup implements Serializable {
     @TableField(exist = false)
     private Boolean isLeaf;
 
+    @TableField(exist = false)
+    private Boolean hasChildren;
+
 
 }
 

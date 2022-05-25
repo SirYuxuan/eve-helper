@@ -1,5 +1,6 @@
 package com.yuxuan66.modules.account.service;
 
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.text.UnicodeUtil;
 import com.alibaba.fastjson.JSONArray;
@@ -10,14 +11,8 @@ import com.yuxuan66.common.esi.EsiApi;
 import com.yuxuan66.common.esi.entity.EsiAccountInfo;
 import com.yuxuan66.common.esi.http.EsiClient;
 import com.yuxuan66.common.utils.TokenUtil;
-import com.yuxuan66.modules.account.entity.Account;
-import com.yuxuan66.modules.account.entity.AccountOrder;
-import com.yuxuan66.modules.account.entity.AccountOrderHistory;
-import com.yuxuan66.modules.account.entity.AccountWalletTransactions;
-import com.yuxuan66.modules.account.mapper.AccountMapper;
-import com.yuxuan66.modules.account.mapper.AccountOrderHistoryMapper;
-import com.yuxuan66.modules.account.mapper.AccountOrderMapper;
-import com.yuxuan66.modules.account.mapper.AccountWalletTransactionsMapper;
+import com.yuxuan66.modules.account.entity.*;
+import com.yuxuan66.modules.account.mapper.*;
 import com.yuxuan66.modules.database.entity.Type;
 import com.yuxuan66.support.basic.BasicQuery;
 import com.yuxuan66.support.basic.model.PageEntity;
@@ -47,6 +42,8 @@ public class AccountService {
     private final EveCache cache;
     @Resource
     private AccountMapper accountMapper;
+    @Resource
+    private AccountAssetsMapper accountAssetsMapper;
     @Resource
     private AccountOrderHistoryMapper accountOrderHistoryMapper;
     @Resource
@@ -118,7 +115,7 @@ public class AccountService {
 
         List<AccountOrderHistory> saveOrderHistory = new ArrayList<>();
 
-        Map<Integer,Type> typeMap = cache.getTypeMap();
+        Map<Integer, Type> typeMap = cache.getTypeMap();
 
         for (Object o : orderArr) {
             JSONObject obj = (JSONObject) o;
@@ -133,10 +130,9 @@ public class AccountService {
             accountOrderHistory.setLocationName(esi.getLocationName(account, accountOrderHistory.getLocationId()));
 
             Type type = typeMap.get(accountOrderHistory.getTypeId());
-            if(type != null){
+            if (type != null) {
                 accountOrderHistory.setTypeName(type.getName());
             }
-
 
 
             saveOrderHistory.add(accountOrderHistory);
@@ -152,6 +148,7 @@ public class AccountService {
 
     /**
      * 异步刷新一个用户的市场交易记录
+     *
      * @param account 用户
      * @return 结果
      */
@@ -166,23 +163,23 @@ public class AccountService {
             walletTransactionsArr = walletTransactionsArr.stream().filter(item -> ((JSONObject) item).getLongValue("transaction_id") > lastId).collect(Collectors.toCollection(JSONArray::new));
         }
 
-        if(walletTransactionsArr.isEmpty()){
+        if (walletTransactionsArr.isEmpty()) {
             return new AsyncResult<>(true);
         }
 
         List<AccountWalletTransactions> saveOrderHistory = new ArrayList<>();
 
-        Map<Integer,Type> typeMap = cache.getTypeMap();
+        Map<Integer, Type> typeMap = cache.getTypeMap();
 
-        List<Integer> ids = walletTransactionsArr.stream().map(item->((JSONObject)item).getIntValue("client_id")).collect(Collectors.toList());
+        List<Integer> ids = walletTransactionsArr.stream().map(item -> ((JSONObject) item).getIntValue("client_id")).collect(Collectors.toList());
         JSONArray nameArrays = esi.universeNames(ids);
-        Map<Integer,Map<String,String>> idNames = new HashMap<>();
+        Map<Integer, Map<String, String>> idNames = new HashMap<>();
         for (Object nameArray : nameArrays) {
             JSONObject json = (JSONObject) nameArray;
-            Map<String,String> temp = new HashMap<>();
-            temp.put("name",json.getString("name"));
-            temp.put("type",json.getString("category"));
-            idNames.put(json.getIntValue("id"),temp);
+            Map<String, String> temp = new HashMap<>();
+            temp.put("name", json.getString("name"));
+            temp.put("type", json.getString("category"));
+            idNames.put(json.getIntValue("id"), temp);
         }
         for (Object o : walletTransactionsArr) {
             JSONObject obj = (JSONObject) o;
@@ -195,16 +192,14 @@ public class AccountService {
             accountWalletTransactions.setId(obj.getLongValue("transaction_id"));
             accountWalletTransactions.setLocationName(esi.getLocationName(account, accountWalletTransactions.getLocationId()));
             Type type = typeMap.get(accountWalletTransactions.getTypeId());
-            if(type != null){
+            if (type != null) {
                 accountWalletTransactions.setTypeName(type.getName());
             }
-            if(idNames.containsKey(accountWalletTransactions.getClientId())){
-                Map<String,String> nameMapping = idNames.get(accountWalletTransactions.getClientId());
+            if (idNames.containsKey(accountWalletTransactions.getClientId())) {
+                Map<String, String> nameMapping = idNames.get(accountWalletTransactions.getClientId());
                 accountWalletTransactions.setClientName(nameMapping.get("name"));
                 accountWalletTransactions.setClientType(nameMapping.get("type"));
             }
-
-
 
 
             saveOrderHistory.add(accountWalletTransactions);
@@ -220,6 +215,7 @@ public class AccountService {
 
     /**
      * 异步刷新一个用户的市场订单
+     *
      * @param account 用户
      * @return 结果
      */
@@ -228,13 +224,13 @@ public class AccountService {
 
         JSONArray walletOrderArr = esiClient.charactersOrders(account);
 
-        if(walletOrderArr.isEmpty()){
+        if (walletOrderArr.isEmpty()) {
             return new AsyncResult<>(true);
         }
 
         List<AccountOrder> saveOrderHistory = new ArrayList<>();
 
-        Map<Integer,Type> typeMap = cache.getTypeMap();
+        Map<Integer, Type> typeMap = cache.getTypeMap();
 
 
         for (Object o : walletOrderArr) {
@@ -248,7 +244,7 @@ public class AccountService {
             accountOrder.setId(obj.getLongValue("order_id"));
             accountOrder.setLocationName(esi.getLocationName(account, accountOrder.getLocationId()));
             Type type = typeMap.get(accountOrder.getTypeId());
-            if(type != null){
+            if (type != null) {
                 accountOrder.setTypeName(type.getName());
             }
             accountOrder.setRegionName(esi.universeRegions(accountOrder.getRegionId()));
@@ -256,11 +252,63 @@ public class AccountService {
             saveOrderHistory.add(accountOrder);
         }
 
-        accountOrderMapper.delete(new QueryWrapper<AccountOrder>().eq("account_id",account.getId()));
+        accountOrderMapper.delete(new QueryWrapper<AccountOrder>().eq("account_id", account.getId()));
         if (!saveOrderHistory.isEmpty()) {
             accountOrderMapper.batchInsert(saveOrderHistory);
         }
 
+
+        return new AsyncResult<>(true);
+    }
+
+    /**
+     * 异步刷新一个用户的资产
+     *
+     * @param account 用户
+     * @return 结果
+     */
+    @Async("threadPoolTaskExecutor")
+    public Future<Boolean> refreshAccountAssets(Account account) {
+
+        JSONArray assetsArr = esi.assets(account, 1);
+        JSONArray itemArr = esi.assetsNames(account, assetsArr.stream().map(item -> ((JSONObject) item).getLongValue("item_id")).distinct().collect(Collectors.toList()));
+        Map<Long, String> itemNameMapping = new HashMap<>();
+
+        for (Object o : itemArr) {
+            JSONObject obj = (JSONObject) o;
+            itemNameMapping.put(obj.getLongValue("item_id"), obj.getString("name"));
+        }
+        List<AccountAssets> accountAssetsList = new ArrayList<>();
+        Map<Integer, Type> typeMap = cache.getTypeMap();
+        for (Object o : assetsArr) {
+            JSONObject obj = (JSONObject) o;
+            AccountAssets accountAssets = obj.toJavaObject(AccountAssets.class);
+            accountAssets.setAccountId(account.getId());
+            accountAssets.setUserId(account.getUserId());
+            accountAssets.setCharacterId(account.getCharacterId());
+            accountAssets.setCharacterName(account.getCharacterName());
+            Type type = typeMap.get(accountAssets.getTypeId());
+            if (type != null) {
+                accountAssets.setTypeName(type.getName());
+            }
+            accountAssets.setItemName(itemNameMapping.get(accountAssets.getItemId()));
+
+            accountAssetsList.add(accountAssets);
+        }
+        for (AccountAssets accountAssets : accountAssetsList) {
+            // 处理位置名称
+            Optional<AccountAssets> accountAssetsOptional = accountAssetsList.stream().filter(item -> item.getItemId().equals(accountAssets.getLocationId())).findFirst();
+            if (accountAssetsOptional.isPresent()) {
+                accountAssets.setLocationName(accountAssetsOptional.get().getItemName());
+            } else {
+                accountAssets.setLocationName(esi.getLocationName(account, accountAssets.getLocationId()));
+            }
+            accountAssets.setCount(Convert.toInt(accountAssetsList.stream().filter(item -> item.getLocationId().equals(accountAssets.getItemId())).count()));
+        }
+        accountAssetsMapper.delete(new QueryWrapper<AccountAssets>().eq("account_id", account.getId()));
+        if (!accountAssetsList.isEmpty()) {
+            accountAssetsMapper.batchInsert(accountAssetsList);
+        }
 
         return new AsyncResult<>(true);
     }
@@ -279,17 +327,19 @@ public class AccountService {
 
     /**
      * 查询当前登录的角色列表
+     *
      * @return 角色列表
      */
-    public RespEntity listLoginAccount(){
+    public RespEntity listLoginAccount() {
         return RespEntity.success(getLoginAccount());
     }
 
     /**
      * 刷新当前登录用户所有的订单
+     *
      * @return 标准返回
      */
-    public RespEntity refreshMarketTransactions(){
+    public RespEntity refreshMarketTransactions() {
 
         List<Account> accountList = getLoginAccount();
         for (Account account : accountList) {
@@ -301,9 +351,10 @@ public class AccountService {
 
     /**
      * 刷新当前登录用户所有的订单
+     *
      * @return 标准返回
      */
-    public RespEntity refreshAccountOrder(){
+    public RespEntity refreshAccountOrder() {
 
         List<Account> accountList = getLoginAccount();
         for (Account account : accountList) {
@@ -313,12 +364,28 @@ public class AccountService {
         return RespEntity.success();
     }
 
+    /**
+     * 刷新当前登录用户所有的资产
+     *
+     * @return 标准返回
+     */
+    public RespEntity refreshAccountAssets() {
+
+        List<Account> accountList = getLoginAccount();
+        for (Account account : accountList) {
+            this.refreshAccountAssets(account);
+        }
+
+        return RespEntity.success();
+    }
+
 
     /**
      * 获取当前登录人员的角色列表
+     *
      * @return 角色列表
      */
-    public List<Account> getLoginAccount(){
-        return accountMapper.selectList(new QueryWrapper<Account>().eq("user_id",TokenUtil.getUserId()));
+    public List<Account> getLoginAccount() {
+        return accountMapper.selectList(new QueryWrapper<Account>().eq("user_id", TokenUtil.getUserId()));
     }
 }

@@ -20,6 +20,7 @@ import com.yuxuan66.modules.user.entity.query.UserQuery;
 import com.yuxuan66.modules.user.mapper.DeptMapper;
 import com.yuxuan66.modules.user.mapper.UserMapper;
 import com.yuxuan66.modules.user.mapper.UsersRolesMapper;
+import com.yuxuan66.support.aliyun.SMSHelper;
 import com.yuxuan66.support.aop.log.annotation.Log;
 import com.yuxuan66.support.basic.model.PageEntity;
 import com.yuxuan66.support.basic.model.RespEntity;
@@ -51,6 +52,7 @@ public class UserService {
     private final MailHelper mailHelper;
     private final SystemConfig config;
     private final RedisUtil redisUtil;
+    private final SMSHelper smsHelper;
 
     /**
      * 发送修改邮件的邮件
@@ -318,12 +320,13 @@ public class UserService {
      * @param phoneCode 参数
      * @return 标准返回
      */
-    public RespEntity sendPhoneCode(PhoneCode phoneCode){
+    public RespEntity sendPhoneCode(PhoneCode phoneCode) throws Exception {
 
         if(redisUtil.hHasKey(CacheKey.CAPTCHA_CODE,phoneCode.getUuid()) && phoneCode.getCode().equals(redisUtil.hget(CacheKey.CAPTCHA_CODE,phoneCode.getUuid()))){
             redisUtil.hdel(CacheKey.CAPTCHA_CODE,phoneCode.getUuid());
             int code = RandomUtil.randomInt(1000,9999);
             redisUtil.hset(CacheKey.PHONE_CODE, phoneCode.getPhone(),Convert.toStr(code),Convert.toLong(config.getVal(CacheKey.Config.Phone.PHONE_CODE_INVALID_TIME)));
+            smsHelper.sendSms(phoneCode.getPhone() ,code);
             return RespEntity.success();
         }
 

@@ -27,7 +27,7 @@ public interface AccountOrderMapper extends BasicMapper<AccountOrder> {
      * @param accountId 角色
      * @return 数据
      */
-    @Select("select region_name region,sum(price*volume_remain) price,false buy from eve_account_order where is_buy_order is null and account_id = #{accountId} GROUP BY region_name")
+    @Select("select region_name region,sum(price*volume_remain) price,false buy from eve_account_order where (is_buy_order is null or is_buy_order = 0) and account_id = #{accountId} GROUP BY region_name")
     List<Map<String,Object>> getSellOrderSum(Long accountId);
 
     /**

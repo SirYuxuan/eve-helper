@@ -7,6 +7,7 @@ import com.dtflys.forest.http.ForestResponse;
 import com.yuxuan66.modules.account.entity.Account;
 import com.yuxuan66.support.forest.Token;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -69,6 +70,7 @@ public interface EsiClient {
 
     /**
      * 获取一个npc空间站的信息
+     *
      * @param id 空间站id
      * @return 空间站信息
      */
@@ -77,6 +79,7 @@ public interface EsiClient {
 
     /**
      * 获取一个区域的名字
+     *
      * @param id 区域id
      * @return 区域信息
      */
@@ -85,12 +88,14 @@ public interface EsiClient {
 
     /**
      * 获取一个玩家建筑的信息
+     *
      * @param id 玩家建筑id
      * @return 玩家建筑信息
      */
     @Get("universe/structures/{id}/")
     @Token
-    String universeStructures(@Var("account") Account account,@Var("id") long id);
+    String universeStructures(@Var("account") Account account, @Var("id") long id);
+
     /**
      * 获取一个角色的名称
      *
@@ -113,7 +118,7 @@ public interface EsiClient {
      * 获取用户钱包流水
      *
      * @param account 用户
-     * @param page        页码
+     * @param page    页码
      * @return 钱包流水
      */
     @Get("characters/{account.characterId}/wallet/journal?page={page}")
@@ -135,7 +140,7 @@ public interface EsiClient {
      * 查询一个用户的订单历史
      *
      * @param account 用户
-     * @param page        订单历史
+     * @param page    订单历史
      * @return 订单历史
      */
     @Get("characters/{account.characterId}/orders/history?page={page}")
@@ -154,8 +159,9 @@ public interface EsiClient {
 
     /**
      * 获取军团建筑列表
+     *
      * @param account 总监或有权限的账号
-     * @param page 页码
+     * @param page    页码
      * @return 标准返回
      */
     @Get("corporations/{account.corpId}/structures/?datasource=tranquility&language=zh&page={page}")
@@ -164,8 +170,9 @@ public interface EsiClient {
 
     /**
      * 获取军团月矿牵引情况
+     *
      * @param account 总监或有权限的账号
-     * @param page 页码
+     * @param page    页码
      * @return 标准返回
      */
     @Get("corporation/{account.corpId}/mining/extractions/?datasource=tranquility&page={page}")
@@ -192,7 +199,7 @@ public interface EsiClient {
     @Token
     JSONArray corporationsMembers(@Var("account") Account account);
 
- /**
+    /**
      * 获取用户头衔
      *
      * @param account 总监
@@ -204,6 +211,7 @@ public interface EsiClient {
 
     /**
      * 获取军团成员的头衔
+     *
      * @param account 总监权限
      * @return 成员头衔
      */
@@ -232,7 +240,6 @@ public interface EsiClient {
     JSONObject charactersFleet(@Var("account") Account account);
 
 
-
     /**
      * 获取指定id列表的中文
      *
@@ -255,10 +262,10 @@ public interface EsiClient {
     /**
      * 获取军团钱包流水
      *
-     * @param account 军团总监
-     * @param corpId      军团id
-     * @param division    部门
-     * @param page        页码
+     * @param account  军团总监
+     * @param corpId   军团id
+     * @param division 部门
+     * @param page     页码
      * @return 钱包流水
      */
     @Get("corporations/{corpId}/wallets/{division}/journal?page={page}")
@@ -266,10 +273,32 @@ public interface EsiClient {
     ForestResponse<JSONArray> corporationsWalletsJournal(@Var("account") Account account, @Var("corpId") Integer corpId, @Var("division") Integer division, @Var("page") int page);
 
     /**
+     * 查询一个角色的资产名称
+     *
+     * @param account 角色
+     * @param names   资产名称
+     * @return 数据
+     */
+    @Post("characters/{account.characterId}/assets/names/")
+    @Token
+    JSONArray assetsName(@Var("account") Account account, @JSONBody List<Long> names);
+
+    /**
+     * 根据资产id获取资产位置名称
+     *
+     * @param account 角色
+     * @param names   资产名称
+     * @return 数据
+     */
+    @Post("characters/{account.characterId}/assets/locations/")
+    @Token
+    JSONArray assetsLocations(@Var("account") Account account, @JSONBody List<Long> names);
+
+    /**
      * 获取个人的采矿明细
      *
      * @param account 角色
-     * @param page        页码
+     * @param page    页码
      * @return 采矿明细
      */
     @Get("characters/{account.characterId}/mining/?page={page}")
@@ -277,19 +306,31 @@ public interface EsiClient {
     ForestResponse<JSONArray> charactersMining(@Var("account") Account account, @Var("page") int page);
 
     /**
-     * 查询玩家建筑订单
+     * 打开市场详情
+     *
      * @param account 角色
-     * @param id 建筑id
-     * @param page 页码
+     * @return 标准返回
+     */
+    @Post("ui/openwindow/marketdetails/?type_id={typeId}")
+    @Token
+    ForestResponse<String> uiOpenWindowMarketDetails(@Var("account") Account account, @Var("typeId") int typeId);
+
+    /**
+     * 查询玩家建筑订单
+     *
+     * @param account 角色
+     * @param id      建筑id
+     * @param page    页码
      * @return 数据
      */
     @Get("markets/structures/{id}/?page={page}")
     @Token
-    ForestResponse<JSONArray> marketsStructures(@Var("account") Account account,@Var("id") Long id, @Var("page") int page);
+    ForestResponse<JSONArray> marketsStructures(@Var("account") Account account, @Var("id") Long id, @Var("page") int page);
 
     /**
      * 查询NPC建筑订单
-     * @param id 建筑id
+     *
+     * @param id   建筑id
      * @param page 页码
      * @return 数据
      */
@@ -298,14 +339,11 @@ public interface EsiClient {
 
     /**
      * 获取物品的基准价格
+     *
      * @return 基准价格
      */
     @Get("markets/prices")
     JSONArray marketsPrices();
-
-
-
-
 
 
 }

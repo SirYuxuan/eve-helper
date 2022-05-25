@@ -18,10 +18,12 @@ public class EveCache {
     private final RedisUtil redis;
 
     private List<Type> typeList;
+    private List<MarketGroup> marketGroupList;
 
     public EveCache(RedisUtil redis) {
         this.redis = redis;
         this.typeList = getType();
+        this.marketGroupList = getMarketGroup();
     }
 
 
@@ -130,18 +132,18 @@ public class EveCache {
      * @param id 目录id
      * @return id列表
      */
-    private Set<Integer> getMarketGroupIdByPid(int id) {
-        MarketGroup marketGroup = getMarketGroup().stream().filter(item -> item.getId().equals(id)).findFirst().get();
+    public List<Integer> getMarketGroupIdByPid(int id) {
+        MarketGroup marketGroup = marketGroupList.stream().filter(item -> item.getId().equals(id)).findFirst().get();
         if (marketGroup.getHasType()) {
-            Set<Integer> result = new HashSet<>();
+            List<Integer> result = new ArrayList<>();
             result.add(id);
             return result;
         }
         Set<MarketGroup> marketGroupSet = new HashSet<>();
-        List<MarketGroup> menuList = getMarketGroup().stream().filter(item -> item.getPid() != null && item.getPid() == id).collect(Collectors.toList());
+        List<MarketGroup> menuList = marketGroupList.stream().filter(item -> item.getPid() != null && item.getPid() == id).collect(Collectors.toList());
         marketGroupSet.add(marketGroup);
         getChildMarketGroup(menuList, marketGroupSet);
-        return marketGroupSet.stream().map(MarketGroup::getId).collect(Collectors.toSet());
+        return marketGroupSet.stream().map(MarketGroup::getId).collect(Collectors.toList());
     }
 
     /**

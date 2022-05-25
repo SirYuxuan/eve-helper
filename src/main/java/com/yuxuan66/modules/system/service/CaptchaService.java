@@ -39,7 +39,7 @@ public class CaptchaService {
         String result = captcha.text();
         String uuid = IdUtil.simpleUUID();
         // 保存
-        Map<String, Object> imgResult = new HashMap<String, Object>(2) {{
+        Map<String, Object> imgResult = new HashMap<>(2) {{
             put("img", captcha.toBase64());
             put("uuid", uuid);
         }};

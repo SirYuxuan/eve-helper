@@ -92,4 +92,22 @@ public class SdeController {
     public RespEntity del(@RequestBody Set<Long> ids){
         return sdeService.del(ids);
     }
+
+    /**
+     * 查询EVE市场分组
+     * @param pid 父id
+     * @return 标准数据
+     */
+    @GetMapping(path = "/getMarketGroup")
+    public RespEntity getMarketGroup(Integer pid){
+        return sdeService.getMarketGroup(pid);
+    }
+    /**
+     * 查询元分组
+     * @return 标准返回
+     */
+    @GetMapping(path = "/getMetaGroup")
+    public RespEntity getMetaGroup(){
+        return sdeService.getMetaGroup();
+    }
 }

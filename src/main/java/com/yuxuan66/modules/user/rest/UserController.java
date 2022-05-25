@@ -103,7 +103,7 @@ public class UserController {
      * @return 标准返回
      */
     @PutMapping(path = "/sendPhoneCode")
-    public RespEntity sendPhoneCode(@RequestBody PhoneCode phoneCode) {
+    public RespEntity sendPhoneCode(@RequestBody PhoneCode phoneCode) throws Exception {
         return userService.sendPhoneCode(phoneCode);
     }
 

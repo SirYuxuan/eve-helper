@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yuxuan66.modules.account.mapper.AccountAssetsMapper">
+
+    <select id="selectAccountAssets" resultType="com.yuxuan66.modules.account.entity.AccountAssets">
+        select * from eve_account_assets a
+        left join eve_type et on a.type_id = et.id
+        <where>
+            <if test="query.blurry != null">
+                and
+                (
+                    a.location_name like concat('%',#{query.blurry},'%') or
+                    a.type_name like concat('%',#{query.blurry},'%') or
+                    a.location_flag like concat('%',#{query.blurry},'%') or
+                    a.location_type like concat('%',#{query.blurry},'%') or
+                    a.item_name like concat('%',#{query.blurry},'%')
+                    )
+            </if>
+            <if test="query.userId != null">
+                and a.user_id = #{query.userId}
+            </if>
+            <if test="query.accountId != null">
+                and a.account_id = #{query.accountId}
+            </if>
+            <if test="query.metaGroupId != null">
+                and et.meta_group_id = #{query.metaGroupId}
+            </if>
+            <if test="query.isBlueprintCopy != null">
+                and a.is_blueprint_copy = #{query.isBlueprintCopy}
+            </if>
+            <if test="query.marketGroupIds != null">
+                and et.market_group_id in
+                <foreach collection="query.marketGroupIds" item="item" index="no" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <!-- 批量插入 -->
+    <insert id="batchInsert">
+        INSERT INTO eve_account_assets VALUES
+        <foreach collection="list" item="item" separator=",">
+            (null,#{item.userId},#{item.accountId},#{item.characterId},#{item.characterName},#{item.isBlueprintCopy},#{item.isSingleton},#{item.itemId},#{item.itemName},
+            #{item.locationFlag},#{item.locationId},#{item.locationName},#{item.locationType},#{item.quantity},
+            #{item.typeId},#{item.typeName},#{item.count},
+            now())
+        </foreach>
+    </insert>
+
+</mapper>

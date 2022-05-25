@@ -48,4 +48,14 @@ public class AccountOrderController {
     public RespEntity priceProposal(boolean allJita){
         return accountOrderService.priceProposal(allJita);
     }
+
+    /**
+     * 打开游戏窗口
+     * @param id 订单id
+     * @return 标准返回
+     */
+    @GetMapping(path = "/openWindow")
+    public RespEntity openWindow(Long id){
+        return accountOrderService.openWindow(id);
+    }
 }

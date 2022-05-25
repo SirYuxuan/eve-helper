@@ -2,6 +2,7 @@ package com.yuxuan66.modules.system.rest;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.yuxuan66.modules.system.entity.param.LoginParam;
+import com.yuxuan66.modules.system.entity.param.RegisterParam;
 import com.yuxuan66.modules.system.service.AuthService;
 import com.yuxuan66.support.aop.log.LogType;
 import com.yuxuan66.support.aop.log.annotation.Log;
@@ -31,6 +32,17 @@ public class AuthController {
     @PostMapping(path = "/login")
     public RespEntity login(@RequestBody LoginParam loginParam){
         return authService.login(loginParam);
+    }
+
+    /**
+     * 用户注册
+     * @param registerParam 注册参数
+     * @return 标准返回
+     */
+    @Log(type = LogType.LOGIN,value = "用户注册")
+    @PostMapping(path = "/register")
+    public RespEntity register(@RequestBody RegisterParam registerParam){
+        return authService.register(registerParam);
     }
 
     /**

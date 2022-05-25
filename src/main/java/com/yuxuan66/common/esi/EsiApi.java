@@ -568,18 +568,39 @@ public class EsiApi {
      */
     public JSONArray assetsNames(Account account, List<Long> ids) {
         refreshToken(account);
-        HttpRequest request = HttpUtil.createPost("https://esi.evetech.net/latest/characters/" + account.getCharacterId() + "/assets/names/?datasource=tranquility");
-        request.header("Authorization", "Bearer " + account.getAccessToken());
-        request.body(JSONObject.toJSONString(new HashSet<>(ids)));
-        return JSONArray.parseArray(request.execute().body());
-    }
 
+        if (ids.size() > 1000) {
+            int totalPage = PageUtil.totalPage(ids.size(), 1000);
+            JSONArray result = new JSONArray();
+            for (int i = 0; i < totalPage; i++) {
+                List<Long> tempIds = ListUtil.page(i, 1000, ids);
+                result.addAll(esiClient.assetsName(account,tempIds));
+            }
+            return result;
+        } else {
+            return esiClient.assetsName(account,ids);
+        }
+    }
+    /**
+     * 根据资产id获取资产位置名称
+     *
+     * @param ids id列表
+     * @return 名称列表
+     */
     public JSONArray assetsLocations(Account account, List<Long> ids) {
         refreshToken(account);
-        HttpRequest request = HttpUtil.createPost("https://esi.evetech.net/latest/characters/" + account.getCharacterId() + "/assets/locations/?datasource=tranquility");
-        request.header("Authorization", "Bearer " + account.getAccessToken());
-        request.body(JSONObject.toJSONString(new HashSet<>(ids)));
-        return JSONArray.parseArray(request.execute().body());
+        if (ids.size() > 1000) {
+            int totalPage = PageUtil.totalPage(ids.size(), 1000);
+            JSONArray result = new JSONArray();
+            for (int i = 0; i < totalPage; i++) {
+                List<Long> tempIds = ListUtil.page(i, 1000, ids);
+                result.addAll(esiClient.assetsLocations(account,tempIds));
+            }
+            return result;
+        } else {
+            return esiClient.assetsLocations(account,ids);
+        }
+
     }
 
     /**

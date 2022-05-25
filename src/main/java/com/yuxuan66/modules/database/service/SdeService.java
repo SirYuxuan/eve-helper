@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * SDE相关操作
@@ -320,6 +321,28 @@ public class SdeService {
         sdeMapper.updateById(sde);
 
         return RespEntity.success();
+    }
+
+    /**
+     * 查询EVE市场分组
+     * @param pid 父id
+     * @return 标准数据
+     */
+    public RespEntity getMarketGroup(Integer pid){
+        List<MarketGroup> marketGroupList = eveCache.getMarketGroup();
+        List<MarketGroup> filterMarketGroup = marketGroupList.stream().filter(item-> (item.getPid() == null && pid == 0) || pid.equals(item.getPid())).collect(Collectors.toList());
+        for (MarketGroup marketGroup : filterMarketGroup) {
+            marketGroup.setHasChildren(marketGroupList.stream().anyMatch(item->marketGroup.getId().equals(item.getPid())));
+        }
+        return RespEntity.success(filterMarketGroup);
+    }
+
+    /**
+     * 查询元分组
+     * @return 标准返回
+     */
+    public RespEntity getMetaGroup(){
+        return RespEntity.success(metaGroupMapper.selectList(null));
     }
 
 
