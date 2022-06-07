@@ -199,7 +199,8 @@ public class EsiApi {
      * @return 技能队列
      */
     public JSONArray charactersSkillQueue(Account userAccount) {
-        return esiClient.charactersSkillQueue(userAccount);
+        ForestResponse<JSONArray> body = esiClient.charactersSkillQueue(userAccount);
+        return body == null ? new JSONArray() : body.getResult();
     }
 
     /**
@@ -238,18 +239,36 @@ public class EsiApi {
     }
 
     /**
+     * 获取行星产物的英文名称
+     * @param id id
+     * @return 名称
+     */
+    public String universesSchematics(Integer id) {
+        if (redis.hasKey(CacheKey.CACHE_EVE_SCHEMATIC_NAME_ID + id) && redis.get(CacheKey.CACHE_EVE_SCHEMATIC_NAME_ID + id) != null) {
+            return Convert.toStr(redis.get(CacheKey.CACHE_EVE_SCHEMATIC_NAME_ID + id), "未知");
+        }
+        String name = esiClient.universesSchematics(id).getString("schematic_name");
+        redis.set(CacheKey.CACHE_EVE_SCHEMATIC_NAME_ID + id, name);
+        return name;
+    }
+
+    /**
      * 获取一个npc空间站的信息
      *
      * @param id 空间站id
      * @return 空间站信息
      */
     public String universeStations(Integer id) {
-        if (redis.hasKey(CacheKey.CACHE_EVE_STATION_NAME_ID + id) && redis.get(CacheKey.CACHE_EVE_STATION_NAME_ID + id) != null) {
-            return Convert.toStr(redis.get(CacheKey.CACHE_EVE_STATION_NAME_ID + id), "未知");
+        try {
+            if (redis.hasKey(CacheKey.CACHE_EVE_STATION_NAME_ID + id) && redis.get(CacheKey.CACHE_EVE_STATION_NAME_ID + id) != null) {
+                return Convert.toStr(redis.get(CacheKey.CACHE_EVE_STATION_NAME_ID + id), "未知");
+            }
+            String name = JSONObject.parseObject(esiClient.universeStations(id)).getString("name");
+            redis.set(CacheKey.CACHE_EVE_STATION_NAME_ID + id, name);
+            return name;
+        } catch (Exception e) {
+            return id.toString();
         }
-        String name = JSONObject.parseObject(esiClient.universeStations(id)).getString("name");
-        redis.set(CacheKey.CACHE_EVE_STATION_NAME_ID + id, name);
-        return name;
     }
 
     /**
@@ -355,6 +374,23 @@ public class EsiApi {
         result.addAll(response.getResult());
         if (Convert.toInt(response.getHeader("x-pages").getValue()) > page) {
             result.addAll(corporationsWalletsJournal(account, division, page + 1));
+        }
+        return result;
+    }
+
+
+    /**
+     * 查询军团工业线路情况
+     * @param account 角色
+     * @param page 页面
+     * @return 标准返回
+     */
+    public JSONArray corporationsIndustryJobs(Account account, int page) {
+        ForestResponse<JSONArray> response = esiClient.corporationsIndustryJobs(account, page);
+        JSONArray result = new JSONArray();
+        result.addAll(response.getResult());
+        if (Convert.toInt(response.getHeader("x-pages").getValue()) > page) {
+            result.addAll(corporationsIndustryJobs(account, page + 1));
         }
         return result;
     }
@@ -574,13 +610,14 @@ public class EsiApi {
             JSONArray result = new JSONArray();
             for (int i = 0; i < totalPage; i++) {
                 List<Long> tempIds = ListUtil.page(i, 1000, ids);
-                result.addAll(esiClient.assetsName(account,tempIds));
+                result.addAll(esiClient.assetsName(account, tempIds));
             }
             return result;
         } else {
-            return esiClient.assetsName(account,ids);
+            return esiClient.assetsName(account, ids);
         }
     }
+
     /**
      * 根据资产id获取资产位置名称
      *
@@ -594,11 +631,11 @@ public class EsiApi {
             JSONArray result = new JSONArray();
             for (int i = 0; i < totalPage; i++) {
                 List<Long> tempIds = ListUtil.page(i, 1000, ids);
-                result.addAll(esiClient.assetsLocations(account,tempIds));
+                result.addAll(esiClient.assetsLocations(account, tempIds));
             }
             return result;
         } else {
-            return esiClient.assetsLocations(account,ids);
+            return esiClient.assetsLocations(account, ids);
         }
 
     }

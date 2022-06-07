@@ -1,11 +1,13 @@
 package com.yuxuan66.modules.account.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.List;
 
 /**
  * EVE-授权角色(EveAccount)实体类
@@ -28,6 +30,7 @@ public class Account implements Serializable {
      * 角色ID
      */
     private Integer characterId;
+    private String accountName;
     /**
      * 当前剩余ISK
      */
@@ -36,6 +39,18 @@ public class Account implements Serializable {
      * 技能点数
      */
     private Integer skillNum;
+    private String skillName;
+    private String skillEndTime;
+
+    @TableField(exist = false)
+    private long scientificResearch;
+    @TableField(exist = false)
+    private long make;
+    @TableField(exist = false)
+    private long reaction;
+
+    private Boolean isMain;
+
     /**
      * 舰船名称
      */
@@ -84,6 +99,8 @@ public class Account implements Serializable {
      */
     private Timestamp createTime;
 
+    @TableField(exist = false)
+    private List<AccountSkill> accountSkillList;
 
 
 }

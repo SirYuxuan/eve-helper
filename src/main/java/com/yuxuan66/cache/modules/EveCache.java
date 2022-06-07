@@ -18,6 +18,9 @@ public class EveCache {
     private final RedisUtil redis;
 
     private List<Type> typeList;
+    public List<Type> getTypeList(){
+        return this.typeList;
+    }
     private List<MarketGroup> marketGroupList;
 
     public EveCache(RedisUtil redis) {

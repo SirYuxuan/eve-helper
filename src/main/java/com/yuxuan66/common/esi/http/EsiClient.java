@@ -29,6 +29,8 @@ public interface EsiClient {
     @Token
     String charactersWallet(@Var("account") Account account);
 
+
+
     /**
      * 获取用户所在位置
      *
@@ -227,7 +229,46 @@ public interface EsiClient {
      */
     @Get("characters/{account.characterId}/skillqueue")
     @Token
-    JSONArray charactersSkillQueue(@Var("account") Account account);
+    ForestResponse<JSONArray> charactersSkillQueue(@Var("account") Account account);
+
+
+    /**
+     * 获取用户工业队列
+     *
+     * @param account 用户
+     * @return 工业队列
+     */
+    @Get("characters/{account.characterId}/industry/jobs/?include_completed=true")
+    @Token
+    JSONArray charactersIndustryJobs(@Var("account") Account account);
+    /**
+     * 查询军团工业线路情况
+     * @param account 角色
+     * @param page 页面
+     * @return 标准返回
+     */
+    @Get("corporations/{account.corpId}/industry/jobs/?include_completed=false&page={page}")
+    @Token
+    ForestResponse<JSONArray> corporationsIndustryJobs(@Var("account") Account account,@Var("page") int page);
+    /**
+     * 获取用户行星开发
+     *
+     * @param account 用户
+     * @return 行星开发
+     */
+    @Get("characters/{account.characterId}/planets")
+    @Token
+    JSONArray charactersPlanets(@Var("account") Account account);
+
+    /**
+     * 获取用户行星开发详情
+     *
+     * @param account 用户
+     * @return 行星开发
+     */
+    @Get("characters/{account.characterId}/planets/{planetId}")
+    @Token
+    JSONObject charactersPlanets(@Var("account") Account account,@Var("planetId") Integer planetId);
 
     /**
      * 获取用户舰队
@@ -238,6 +279,14 @@ public interface EsiClient {
     @Get("characters/{account.characterId}/fleet")
     @Token
     JSONObject charactersFleet(@Var("account") Account account);
+
+    /**
+     * 获取一个行星产物的名称
+     * @param schematicId 产物id
+     * @return 产物名称
+     */
+    @Get("universe/schematics/{schematicId}")
+    JSONObject universesSchematics(@Var("schematicId") Integer schematicId);
 
 
     /**

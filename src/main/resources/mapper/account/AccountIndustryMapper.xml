@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yuxuan66.modules.account.mapper.AccountIndustryMapper">
+
+
+    <!-- 批量插入 -->
+    <insert id="batchInsert">
+        INSERT INTO eve_account_industry VALUES
+        <foreach collection="list" item="item" separator=",">
+            (null,#{item.userId},#{item.accountId},#{item.characterId},#{item.characterName},#{item.endDate},#{item.cost},#{item.licensedRuns},#{item.probability},
+            #{item.productTypeId},#{item.productTypeName},#{item.blueprintTypeId},#{item.blueprintTypeName},#{item.duration},#{item.activityId},#{item.runs},#{item.startDate},#{item.status},
+            now())
+        </foreach>
+    </insert>
+
+</mapper>

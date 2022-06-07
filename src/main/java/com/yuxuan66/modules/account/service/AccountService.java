@@ -3,9 +3,12 @@ package com.yuxuan66.modules.account.service;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.text.UnicodeUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yuxuan66.cache.modules.EveCache;
 import com.yuxuan66.common.esi.EsiApi;
 import com.yuxuan66.common.esi.entity.EsiAccountInfo;
@@ -40,6 +43,19 @@ public class AccountService {
     private final EsiApi esi;
     private final EsiClient esiClient;
     private final EveCache cache;
+    private final Map<String, String> starMap = new HashMap<>();
+
+    {
+        starMap.put("temperate", "温和");
+        starMap.put("barren", "贫瘠");
+        starMap.put("oceanic", "海洋");
+        starMap.put("ice", "冰体");
+        starMap.put("gas", "气体");
+        starMap.put("lava", "熔岩");
+        starMap.put("storm", "风暴");
+        starMap.put("plasma", "等离子");
+    }
+
     @Resource
     private AccountMapper accountMapper;
     @Resource
@@ -50,6 +66,12 @@ public class AccountService {
     private AccountOrderMapper accountOrderMapper;
     @Resource
     private AccountWalletTransactionsMapper accountWalletTransactionsMapper;
+    @Resource
+    private AccountSkillMapper accountSkillMapper;
+    @Resource
+    private AccountPiMapper accountPiMapper;
+    @Resource
+    private AccountIndustryMapper accountIndustryMapper;
 
     /**
      * 后台异步刷新用户基础数据
@@ -98,8 +120,46 @@ public class AccountService {
 
     }
 
+    @Async("threadPoolTaskExecutor")
+    public Future<Boolean> refreshSkill(Account account) {
+
+        JSONArray skillArray = esi.charactersSkillQueue(account);
+
+        Map<Integer, Type> typeMap = cache.getTypeMap();
+
+        List<AccountSkill> accountSkillList = new ArrayList<>();
+
+        if (!skillArray.isEmpty()) {
+            for (Object o : skillArray) {
+                AccountSkill accountSkill = ((JSONObject) o).toJavaObject(AccountSkill.class);
+                accountSkill.setUserId(account.getUserId());
+                accountSkill.setAccountId(account.getId());
+                accountSkill.setCharacterId(account.getCharacterId());
+                accountSkill.setCharacterName(account.getCharacterName());
+                accountSkill.setSkillName(typeMap.get(accountSkill.getSkillId()).getName());
+                accountSkillList.add(accountSkill);
+            }
+            Integer skillId = skillArray.getJSONObject(0).getIntValue("skill_id");
+            Type type = typeMap.get(skillId);
+            String endTime = skillArray.getJSONObject(skillArray.size() - 1).getString("finish_date");
+            if (StrUtil.isNotBlank(endTime)) {
+                account.setSkillEndTime(DateUtil.parse(endTime).toStringDefaultTimeZone());
+                account.setSkillName(type.getName() + " " + skillArray.getJSONObject(0).getIntValue("finished_level"));
+                accountMapper.updateById(account);
+            }
+
+            accountSkillMapper.delete(new QueryWrapper<AccountSkill>().eq("account_id", account.getId()));
+            accountSkillMapper.batchInsert(accountSkillList);
+        } else {
+            account.setSkillName("");
+            account.setSkillEndTime("");
+            accountMapper.updateById(account);
+        }
+        return new AsyncResult<>(true);
+    }
+
     /**
-     * 异步刷新一个用户的历史订单
+     * 异步刷新一个用户的技能队列
      *
      * @return 结果
      */
@@ -261,6 +321,83 @@ public class AccountService {
         return new AsyncResult<>(true);
     }
 
+
+    public void refreshIndustry() {
+        Account account = accountMapper.selectById(94);
+
+        Map<Integer, Account> accountMap = new HashMap<>();
+        accountMapper.selectList(new QueryWrapper<Account>().eq("user_id", account.getUserId())).forEach(item -> accountMap.put(item.getCharacterId(), item));
+        JSONArray industryArr = esi.corporationsIndustryJobs(account, 1);
+
+        List<AccountIndustry> accountIndustryList = new ArrayList<>();
+        Map<Integer, Type> typeMap = cache.getTypeMap();
+
+        for (Object o : industryArr) {
+            AccountIndustry accountIndustry = ((JSONObject) o).toJavaObject(AccountIndustry.class);
+            Account dataAccount = accountMap.get(accountIndustry.getInstallerId());
+            if (dataAccount != null) {
+                accountIndustry.setAccountId(dataAccount.getId());
+                accountIndustry.setUserId(dataAccount.getUserId());
+                accountIndustry.setCharacterId(dataAccount.getCharacterId());
+                accountIndustry.setCharacterName(dataAccount.getCharacterName());
+                Type type = typeMap.get(accountIndustry.getBlueprintTypeId());
+                if (type != null) {
+                    accountIndustry.setBlueprintTypeName(type.getName());
+                }
+                type = typeMap.get(accountIndustry.getProductTypeId());
+                if (type != null) {
+                    accountIndustry.setProductTypeName(type.getName());
+                }
+
+                accountIndustryList.add(accountIndustry);
+            }
+        }
+        if (!accountIndustryList.isEmpty()) {
+            accountIndustryMapper.batchInsert(accountIndustryList);
+        }
+    }
+
+    @Async("threadPoolTaskExecutor")
+    public Future<Boolean> refreshPI(Account account) {
+        JSONArray piArr = esiClient.charactersPlanets(account);
+        List<Type> typeList = cache.getTypeList();
+        List<AccountPi> accountPiList = new ArrayList<>();
+        for (Object o : piArr) {
+            AccountPi pi = ((JSONObject) o).toJavaObject(AccountPi.class);
+            pi.setAccountId(account.getId());
+            pi.setUserId(account.getUserId());
+            pi.setCharacterId(account.getCharacterId());
+            pi.setCharacterName(account.getCharacterName());
+            JSONObject details = esiClient.charactersPlanets(account, pi.getPlanetId());
+            Set<Integer> schematicIdSet = new HashSet<>();
+            pi.setSolarSystemName(esi.universeSystems(pi.getSolarSystemId()));
+            pi.setPlanetType(starMap.get(pi.getPlanetType()));
+            if (details.containsKey("pins")) {
+                for (Object pins : details.getJSONArray("pins")) {
+                    JSONObject pin = (JSONObject) pins;
+                    if (pin.containsKey("schematic_id")) {
+                        schematicIdSet.add(pin.getIntValue("schematic_id"));
+                    }
+                }
+                List<String> nameList = new ArrayList<>();
+                if (!schematicIdSet.isEmpty()) {
+                    for (Integer id : schematicIdSet) {
+                        Optional<Type> optionalType = typeList.stream().filter(item -> item.getNameEn().equals(esi.universesSchematics(id))).findFirst();
+                        optionalType.ifPresent(type -> nameList.add(type.getName()));
+                    }
+                }
+                pi.setProduce(String.join(",", nameList));
+                accountPiList.add(pi);
+            }
+        }
+        accountPiMapper.delete(new QueryWrapper<AccountPi>().eq("account_id", account.getId()));
+        for (AccountPi accountPi : accountPiList) {
+            accountPiMapper.insert(accountPi);
+        }
+
+        return new AsyncResult<>(true);
+    }
+
     /**
      * 异步刷新一个用户的资产
      *
@@ -320,9 +457,24 @@ public class AccountService {
      * @return 用户角色列表
      */
     public PageEntity list(BasicQuery<Account> basicQuery) {
+        basicQuery.processingSort();
         QueryWrapper<Account> queryWrapper = basicQuery.getQueryWrapper();
         queryWrapper.eq("user_id", TokenUtil.getUserId());
-        return PageEntity.success(accountMapper.selectPage(basicQuery.getPage(), queryWrapper));
+        List<AccountSkill> accountSkillList = accountSkillMapper.selectList(new QueryWrapper<AccountSkill>().eq("user_id", TokenUtil.getUserId()));
+        List<AccountIndustry> accountIndustryList = accountIndustryMapper.selectList(new QueryWrapper<AccountIndustry>().eq("user_id",TokenUtil.getUserId()));
+
+        Page<Account> accountPage = accountMapper.selectPage(basicQuery.getPage(), queryWrapper);
+
+
+        for (Account record : accountPage.getRecords()) {
+            record.setAccountSkillList(accountSkillList.stream().filter(item -> item.getAccountId().equals(record.getId())).collect(Collectors.toList()));
+            List<AccountIndustry> checkOneList = accountIndustryList.stream().filter(item->item.getAccountId().equals(record.getId())).collect(Collectors.toList());
+            record.setReaction(checkOneList.stream().filter(item->item.getActivityId() == 9).count());
+            record.setMake(checkOneList.stream().filter(item->item.getActivityId() == 1).count());
+            record.setScientificResearch(checkOneList.size() - record.getMake() - record.getReaction());
+
+        }
+        return PageEntity.success(accountPage);
     }
 
     /**
@@ -355,6 +507,7 @@ public class AccountService {
      * @return 标准返回
      */
     public RespEntity refreshAccountOrder() {
+        this.refreshIndustry();
 
         List<Account> accountList = getLoginAccount();
         for (Account account : accountList) {
@@ -379,6 +532,47 @@ public class AccountService {
         return RespEntity.success();
     }
 
+    /**
+     * 设置用户为主角色
+     * @param accountId 角色id
+     * @return 标准返回
+     */
+    public RespEntity setMainAccount(Long accountId){
+        Account account = accountMapper.selectById(accountId);
+        UpdateWrapper<Account> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("user_id",account.getUserId());
+        updateWrapper.set("is_main",false);
+        accountMapper.update(new Account(),updateWrapper);
+        account.setIsMain(true);
+        accountMapper.updateById(account);
+        return RespEntity.success();
+    }
+
+
+    /**
+     * 删除一个授权用户
+     *
+     * @param accountId 用户id
+     * @return 标准返回
+     */
+    public RespEntity delAccount(Long accountId) {
+        accountMapper.deleteById(accountId);
+        return RespEntity.success();
+    }
+
+    /**
+     * 修改一个角色的账号名
+     *
+     * @param accountId   账号id
+     * @param accountName 账号名
+     * @return 标准返回
+     */
+    public RespEntity setAccountName(Long accountId, String accountName) {
+        Account account = accountMapper.selectById(accountId);
+        account.setAccountName(accountName);
+        accountMapper.updateById(account);
+        return RespEntity.success();
+    }
 
     /**
      * 获取当前登录人员的角色列表

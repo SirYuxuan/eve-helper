@@ -1,6 +1,6 @@
 spring:
   sa-token:
-    activity-timeout: 1800
+    activity-timeout: 1800000
     token-style: random-32
     allow-concurrent-login: true
     is-share: false

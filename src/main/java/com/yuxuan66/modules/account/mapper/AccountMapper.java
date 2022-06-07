@@ -3,6 +3,7 @@ package com.yuxuan66.modules.account.mapper;
 import com.yuxuan66.modules.account.entity.Account;
 import com.yuxuan66.support.basic.BasicMapper;
 import org.apache.ibatis.annotations.Mapper;
+import org.springframework.data.domain.Page;
 
 /**
  * @author Sir丶雨轩
@@ -10,4 +11,6 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface AccountMapper extends BasicMapper<Account> {
+
+
 }

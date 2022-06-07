@@ -73,6 +73,10 @@ public class EsiService {
         List<Account> accountList = accountMapper.selectList(new QueryWrapper<Account>().eq("character_id", tokenInfo.getCharacterId()));
         if (!accountList.isEmpty()) {
             if(Objects.equals(accountList.get(0).getCharacterId(), tokenInfo.getCharacterId())){
+                Account updateToken = accountList.get(0);
+                updateToken.setAccessToken(tokenInfo.getAccessToken());
+                updateToken.setRefreshToken(tokenInfo.getRefreshToken());
+                accountMapper.updateById(updateToken);
                 accountService.refreshBaseInfo(accountList.get(0));
                 return getResultPath("绑定成功,部分数据后台刷新中");
             }
@@ -85,6 +89,7 @@ public class EsiService {
         account.setRefreshToken(tokenInfo.getRefreshToken());
         account.setAccessToken(tokenInfo.getAccessToken());
         account.setServer(1);
+        account.setIsMain(false);
         accountMapper.insert(account);
         accountService.refreshBaseInfo(account);
 

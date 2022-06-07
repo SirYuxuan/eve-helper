@@ -6,6 +6,7 @@ import com.yuxuan66.support.basic.BasicQuery;
 import com.yuxuan66.support.basic.model.PageEntity;
 import com.yuxuan66.support.basic.model.RespEntity;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -66,5 +67,37 @@ public class AccountController {
     @GetMapping(path = "/refreshAccountAssets")
     public RespEntity refreshAccountAssets(){
         return accountService.refreshAccountAssets();
+    }
+
+    /**
+     * 删除一个授权用户
+     * @param accountId 用户id
+     * @return 标准返回
+     */
+    @DeleteMapping(path = "/delAccount")
+    public RespEntity delAccount(Long accountId){
+        return accountService.delAccount(accountId);
+    }
+
+
+    /**
+     * 设置用户为主角色
+     * @param accountId 角色id
+     * @return 标准返回
+     */
+    @GetMapping(path = "/setMainAccount")
+    public RespEntity setMainAccount(Long accountId){
+        return accountService.setMainAccount(accountId);
+    }
+
+    /**
+     * 修改一个角色的账号名
+     * @param accountId 账号id
+     * @param accountName 账号名
+     * @return 标准返回
+     */
+    @GetMapping(path = "/setAccountName")
+    public RespEntity setAccountName(Long accountId,String accountName){
+        return accountService.setAccountName(accountId,accountName);
     }
 }

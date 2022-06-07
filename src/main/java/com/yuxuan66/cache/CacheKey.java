@@ -283,6 +283,7 @@ public class CacheKey {
      * eve角色id对应的名字
      */
     public static final String CACHE_EVE_CHARACTERS_NAME_ID = "EVE_CHARACTERS:";
+    public static final String CACHE_EVE_SCHEMATIC_NAME_ID = "EVE_SCHEMATIC:";
     public static final String CACHE_EVE_STATION_NAME_ID = "EVE_STATION:";
     public static final String CACHE_EVE_REGION_NAME_ID = "EVE_REGION:";
     public static final String CACHE_EVE_STRUCTURES_NAME_ID = "EVE_STRUCTURES:";
