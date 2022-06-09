@@ -50,6 +50,24 @@ public class AccountController {
     public RespEntity refreshMarketTransactions(){
         return accountService.refreshMarketTransactions();
     }
+
+    /**
+     * 刷新当前登录用户的菜地
+     * @return 标准返回
+     */
+    @GetMapping(path = "/refreshPI")
+    public RespEntity refreshPI(){
+        return accountService.refreshPI();
+    }
+
+    /**
+     * 刷新当前登录用户的技能和工业数据
+     * @return 标准返回
+     */
+    @GetMapping(path = "/refreshAccount")
+    public RespEntity refreshAccount() {
+        return accountService.refreshAccount();
+    }
     /**
      * 刷新当前登录用户所有的订单
      * @return 标准返回

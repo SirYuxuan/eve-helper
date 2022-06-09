@@ -232,6 +232,7 @@ public interface EsiClient {
     ForestResponse<JSONArray> charactersSkillQueue(@Var("account") Account account);
 
 
+
     /**
      * 获取用户工业队列
      *

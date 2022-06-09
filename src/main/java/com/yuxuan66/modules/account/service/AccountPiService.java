@@ -34,6 +34,7 @@ public class AccountPiService {
      */
     public PageEntity list(AccountPiQuery piQuery) {
         piQuery.processingSort();
+        piQuery.processingBlurry("character_name","planet_type","produce","solar_system_name");
         QueryWrapper<AccountPi> queryWrapper = piQuery.getQueryWrapper();
         if (piQuery.getAccountId() == null) {
             queryWrapper.eq("user_id", TokenUtil.getUserId());
