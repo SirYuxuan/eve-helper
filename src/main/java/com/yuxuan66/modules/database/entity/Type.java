@@ -60,6 +60,9 @@ public class Type implements Serializable {
     @TableField(exist = false)
     private Price price;
 
+    @TableField(exist = false)
+    private Boolean isLeaf = true;
+
     @Setter
     @Getter
     public static class Price{

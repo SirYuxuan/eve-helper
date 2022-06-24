@@ -329,7 +329,7 @@ public class SdeService {
      * @return 标准数据
      */
     public RespEntity getMarketGroup(Integer pid){
-        List<MarketGroup> marketGroupList = eveCache.getMarketGroup();
+        List<MarketGroup> marketGroupList = eveCache.getMarketGroupList();
         List<MarketGroup> filterMarketGroup = marketGroupList.stream().filter(item-> (item.getPid() == null && pid == 0) || pid.equals(item.getPid())).collect(Collectors.toList());
         for (MarketGroup marketGroup : filterMarketGroup) {
             marketGroup.setHasChildren(marketGroupList.stream().anyMatch(item->marketGroup.getId().equals(item.getPid())));

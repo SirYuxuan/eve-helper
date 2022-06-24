@@ -49,9 +49,9 @@ public class Account implements Serializable {
     @TableField(exist = false)
     private long reaction;
 
-    private int scientificLine;
-    private int makeLine;
-    private int reactionLine;
+    private Integer scientificLine;
+    private Integer makeLine;
+    private Integer reactionLine;
 
     private Boolean isMain;
 

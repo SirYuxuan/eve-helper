@@ -392,6 +392,9 @@ public class EsiApi {
         if (Convert.toInt(response.getHeader("x-pages").getValue()) > page) {
             result.addAll(corporationsIndustryJobs(account, page + 1));
         }
+
+
+
         return result;
     }
 

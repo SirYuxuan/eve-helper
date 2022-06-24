@@ -3,6 +3,7 @@ package com.yuxuan66.cache.modules;
 import com.yuxuan66.cache.CacheKey;
 import com.yuxuan66.cache.RedisUtil;
 import com.yuxuan66.modules.database.entity.*;
+import lombok.Getter;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -13,20 +14,47 @@ import java.util.stream.Collectors;
  * @since 2021/12/15
  */
 @Component
+@Getter
 public class EveCache {
 
     private final RedisUtil redis;
 
-    private List<Type> typeList;
-    public List<Type> getTypeList(){
-        return this.typeList;
-    }
-    private List<MarketGroup> marketGroupList;
+    private final List<Type> typeList;
+    private final List<MarketGroup> marketGroupList;
+
+    private final List<BluePrint> bluePrintList;
+
+    private final List<BluePrintProducts> bluePrintProductsList;
 
     public EveCache(RedisUtil redis) {
         this.redis = redis;
         this.typeList = getType();
         this.marketGroupList = getMarketGroup();
+        this.bluePrintList = getBluePrint();
+        this.bluePrintProductsList = new ArrayList<>();
+        for (BluePrint bluePrint : this.bluePrintList) {
+            if (bluePrint.getPrintProductsList() != null) {
+                this.bluePrintProductsList.addAll(bluePrint.getPrintProductsList());
+            }
+
+        }
+
+    }
+
+    /**
+     * 根据分类id获取所有子集id
+     *
+     * @param id id
+     * @return 子集id
+     */
+    public List<Integer> getMarketGroupIdByPidCache(int id) {
+        if (redis.hasKey(CacheKey.EVE_MARKET_GROUP_LEVEL + id)) {
+            long size = redis.lGetListSize(CacheKey.EVE_MARKET_GROUP_LEVEL + id);
+            return redis.lGet(CacheKey.EVE_MARKET_GROUP_LEVEL + id, 0, size, Integer.class);
+        }
+        List<Integer> result = new ArrayList<>(getMarketGroupIdByPid(id));
+        redis.lSet(CacheKey.EVE_MARKET_GROUP_LEVEL + id, result, Integer.class);
+        return result;
     }
 
 
@@ -66,7 +94,6 @@ public class EveCache {
         }
         return result;
     }
-
 
 
     /**
@@ -154,7 +181,7 @@ public class EveCache {
      *
      * @return eve市场分组缓存
      */
-    public List<MarketGroup> getMarketGroup() {
+    private List<MarketGroup> getMarketGroup() {
         if (redis.hasKey(CacheKey.EVE_SDE_MARKET_GROUP_ID)) {
             long size = redis.lGetListSize(CacheKey.EVE_SDE_MARKET_GROUP_ID);
             return redis.lGet(CacheKey.EVE_SDE_MARKET_GROUP_ID, 0, size, MarketGroup.class);
@@ -172,7 +199,18 @@ public class EveCache {
         redis.lSet(CacheKey.EVE_SDE_BLUE_PRINT, bluePrintList, BluePrint.class);
     }
 
-
+    /**
+     * 缓存中获取蓝图列表
+     *
+     * @return 蓝图列表
+     */
+    private List<BluePrint> getBluePrint() {
+        if (redis.hasKey(CacheKey.EVE_SDE_BLUE_PRINT)) {
+            long size = redis.lGetListSize(CacheKey.EVE_SDE_BLUE_PRINT);
+            return redis.lGet(CacheKey.EVE_SDE_BLUE_PRINT, 0, size, BluePrint.class);
+        }
+        return new ArrayList<>();
+    }
 
 
 }

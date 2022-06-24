@@ -116,6 +116,9 @@ public interface EsiClient {
     @Get("characters/{id}/corporationhistory/?datasource=tranquility")
     String charactersCorporationHistory(@Var("id") Integer id);
 
+    @Get("markets/10000003/history/?type_id={id}")
+    JSONArray marketsHistory(@Var("id") Integer id);
+
     /**
      * 获取用户钱包流水
      *

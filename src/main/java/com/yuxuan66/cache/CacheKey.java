@@ -321,6 +321,10 @@ public class CacheKey {
      */
     public static final String EVE_SDE_GROUP_ID = "EVE:SDE:GROUP_ID";
     /**
+     * 市场等级缓存
+     */
+    public static final String EVE_MARKET_GROUP_LEVEL = "EVE:MARKET:GROUP:LEVEL:";
+    /**
      * eve sde 元分组缓存key
      */
     public static final String EVE_SDE_META_GROUP_ID = "EVE:SDE:META_GROUP_ID";
